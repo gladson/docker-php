@@ -1,0 +1,8 @@
+database/*
+!database/README.md
+.DS_Store
+.idea
+src/backend/*
+!src/backend/README.md
+src/frontend/*
+!src/frontend/README.md

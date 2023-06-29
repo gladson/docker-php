@@ -1,0 +1,125 @@
+version: '3.3'
+
+services:
+  backend_api:
+    container_name: 'backend_api'
+    build:
+      context: ./dockerfiles
+      dockerfile: ./backend/nginx.dockerfile
+    ports:
+      - "8080:80"
+    volumes:
+      - ./src/backend:/var/www/html:rw
+    depends_on:
+      - backend_php
+      - backend_database
+      # - backend_redis
+      - backend_mailtest
+    networks:
+      - base_local_network
+
+  # backend_redis:
+  #   container_name: 'backend_redis'
+  #   image: redis:alpine
+  #   restart: unless-stopped
+  #   ports:
+  #     - "6379:6379"
+  #   networks:
+  #     - base_local_network
+
+  # backend_database:
+  #   container_name: 'backend_database'
+  #   image: mysql:5.7.42
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3306:3306"
+  #   environment:
+  #     MYSQL_DATABASE: homestead
+  #     MYSQL_USER: homestead
+  #     MYSQL_PASSWORD: secret
+  #     MYSQL_ROOT_PASSWORD: secret
+  #     SERVICE_TAGS: dev
+  #     SERVICE_NAME: mysql
+  #   networks:
+  #     - base_local_network
+
+  backend_database:
+    container_name: 'backend_database'
+    image: postgres:15-alpine
+    restart: unless-stopped
+    ports:
+      - "5632:5432"
+    volumes:
+      - ./database:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: homestead
+      POSTGRES_USER: homestead
+      POSTGRES_PASSWORD: secret
+      SERVICE_TAGS: dev
+      SERVICE_NAME: postgresql
+    networks:
+      - base_local_network
+
+  front_npm:
+    container_name: 'front_npm'
+    image: node:current-alpine
+    working_dir: /var/www/html
+    command: npm run dev -- --port 3000 --host
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+      - "5173:5173"
+    volumes:
+      - ./src/frontend:/var/www/html
+    networks:
+      - base_local_network
+
+  backend_php:
+    container_name: 'backend_php'
+    build:
+      context: ./dockerfiles
+      dockerfile: ./backend/php.dockerfile
+    volumes:
+      - ./src/backend:/var/www/html:rw
+    networks:
+      - base_local_network
+
+  backend_composer:
+    container_name: 'backend_composer'
+    build:
+      context: ./dockerfiles
+      dockerfile: ./backend/composer.dockerfile
+    volumes:
+      - ./src/backend:/var/www/html:rw
+    depends_on:
+      - backend_php
+    entrypoint: [ 'composer', '--ignore-platform-reqs' ]
+    networks:
+      - base_local_network
+
+  backend_artisan:
+    container_name: 'backend_artisan'
+    build:
+      context: ./dockerfiles
+      dockerfile: ./backend/php.dockerfile
+    volumes:
+      - ./src/backend:/var/www/html:rw
+    depends_on:
+      - backend_database
+    entrypoint: [ 'php', '/var/www/html/artisan' ]
+    networks:
+      - base_local_network
+
+  backend_mailtest:
+    container_name: 'backend_mailtest'
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    ports:
+      - "1030:1025"
+      - "8030:8025"
+    networks:
+      - base_local_network
+
+networks:
+  base_local_network:
+    driver: bridge
