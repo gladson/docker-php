@@ -41,7 +41,7 @@ docker_rm_dev:
 	docker image rm nginx:stable-alpine
 	docker image rm node:current-alpine
 	docker image rm postgres:15-alpine
-	docker image rm php:8.2.4-fpm-alpine3.17
+	docker image rm php:7.3.33-fpm-alpine3.14
 
 
 docker_clear_dev:
@@ -81,7 +81,7 @@ docker_rm_prod:
 	docker image rm nginx:stable-alpine
 	docker image rm node:current-alpine
 	docker image rm postgres:15-alpine
-	docker image rm php:8.2.4-fpm-alpine3.17
+	docker image rm php:7.3.33-fpm-alpine3.14
 
 # ================================== EXTRA ==================================
 
